@@ -42,3 +42,6 @@ public:
 };
 
 #endif // CORE_GLOBALS_H
+
+
+

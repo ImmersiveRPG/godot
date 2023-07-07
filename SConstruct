@@ -944,6 +944,8 @@ if selected_platform in platform_list:
         SConscript("editor/SCsub")
     SConscript("drivers/SCsub")
 
+    SConscript("stop_watch/SCsub")
+
     SConscript("platform/SCsub")
     SConscript("modules/SCsub")
     if env["tests"]:

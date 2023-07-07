@@ -30,6 +30,7 @@
 
 #include "main.h"
 
+#include "stop_watch/stop_watch.h"
 #include "core/config/project_settings.h"
 #include "core/core_globals.h"
 #include "core/core_string_names.h"
@@ -3325,6 +3326,7 @@ bool Main::iteration() {
 	//for now do not error on this
 	//ERR_FAIL_COND_V(iterating, false);
 
+	auto stop_watch = StopWatch();
 	iterating++;
 
 	const uint64_t ticks = OS::get_singleton()->get_ticks_usec();
@@ -3374,34 +3376,42 @@ bool Main::iteration() {
 
 		uint64_t physics_begin = OS::get_singleton()->get_ticks_usec();
 
+		stop_watch.start();
 		PhysicsServer3D::get_singleton()->sync();
 		PhysicsServer3D::get_singleton()->flush_queries();
 
 		PhysicsServer2D::get_singleton()->sync();
 		PhysicsServer2D::get_singleton()->flush_queries();
+		StopWatch::_phy_used += stop_watch.stop();
 
 		if (OS::get_singleton()->get_main_loop()->physics_process(physics_step * time_scale)) {
+			stop_watch.start();
 			PhysicsServer3D::get_singleton()->end_sync();
 			PhysicsServer2D::get_singleton()->end_sync();
+			StopWatch::_phy_used += stop_watch.stop();
 
 			exit = true;
 			break;
 		}
 
+		stop_watch.start();
 		uint64_t navigation_begin = OS::get_singleton()->get_ticks_usec();
 
 		NavigationServer3D::get_singleton()->process(physics_step * time_scale);
 
 		navigation_process_ticks = MAX(navigation_process_ticks, OS::get_singleton()->get_ticks_usec() - navigation_begin); // keep the largest one for reference
 		navigation_process_max = MAX(OS::get_singleton()->get_ticks_usec() - navigation_begin, navigation_process_max);
+		StopWatch::_navigation_used += stop_watch.stop();
 
 		message_queue->flush();
 
+		stop_watch.start();
 		PhysicsServer3D::get_singleton()->end_sync();
 		PhysicsServer3D::get_singleton()->step(physics_step * time_scale);
 
 		PhysicsServer2D::get_singleton()->end_sync();
 		PhysicsServer2D::get_singleton()->step(physics_step * time_scale);
+		StopWatch::_phy_used += stop_watch.stop();
 
 		message_queue->flush();
 
@@ -3423,6 +3433,7 @@ bool Main::iteration() {
 	}
 	message_queue->flush();
 
+	stop_watch.start();
 	RenderingServer::get_singleton()->sync(); //sync if still drawing from previous frames.
 
 	if (DisplayServer::get_singleton()->can_any_window_draw() &&
@@ -3438,6 +3449,7 @@ bool Main::iteration() {
 			force_redraw_requested = false;
 		}
 	}
+	StopWatch::_draw_used += stop_watch.stop();
 
 	process_ticks = OS::get_singleton()->get_ticks_usec() - process_begin;
 	process_max = MAX(process_ticks, process_max);

@@ -270,6 +270,8 @@ def generate_scu_files(verbose, is_release_build):
     process_folder(["core/string"])
     process_folder(["core/variant"], ["variant_utility"])
 
+    process_folder(["stop_watch"])
+
     process_folder(["drivers/unix"])
     process_folder(["drivers/png"])
 

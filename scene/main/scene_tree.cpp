@@ -30,6 +30,7 @@
 
 #include "scene_tree.h"
 
+#include "stop_watch/stop_watch.h"
 #include "core/config/project_settings.h"
 #include "core/debugger/engine_debugger.h"
 #include "core/input/input.h"
@@ -450,10 +451,12 @@ void SceneTree::initialize() {
 }
 
 bool SceneTree::physics_process(double p_time) {
+	auto stop_watch = StopWatch();
 	root_lock++;
 
 	current_frame++;
 
+	stop_watch.start();
 	flush_transform_notifications();
 
 	if (MainLoop::physics_process(p_time)) {
@@ -468,11 +471,19 @@ bool SceneTree::physics_process(double p_time) {
 	_process(true);
 
 	_flush_ugc();
+	StopWatch::_physics_process_fn_used += stop_watch.stop();
+
+	stop_watch.start();
 	MessageQueue::get_singleton()->flush(); //small little hack
+	StopWatch::_call_deferred_used += stop_watch.stop();
 
+	stop_watch.start();
 	process_timers(p_time, true); //go through timers
+	StopWatch::_timers_used += stop_watch.stop();
 
+	stop_watch.start();
 	process_tweens(p_time, true);
+	StopWatch::_tweens_used += stop_watch.stop();
 
 	flush_transform_notifications();
 	root_lock--;
@@ -484,8 +495,10 @@ bool SceneTree::physics_process(double p_time) {
 }
 
 bool SceneTree::process(double p_time) {
+	auto stop_watch = StopWatch();
 	root_lock++;
 
+	stop_watch.start();
 	if (MainLoop::process(p_time)) {
 		_quit = true;
 	}
@@ -500,24 +513,36 @@ bool SceneTree::process(double p_time) {
 	}
 
 	emit_signal(SNAME("process_frame"));
+	StopWatch::_process_fn_used += stop_watch.stop();
 
+	stop_watch.start();
 	MessageQueue::get_singleton()->flush(); //small little hack
+	StopWatch::_call_deferred_used += stop_watch.stop();
 
+	stop_watch.start();
 	flush_transform_notifications();
 
 	_process(false);
 
 	_flush_ugc();
+	StopWatch::_process_fn_used += stop_watch.stop();
+
+	stop_watch.start();
 	MessageQueue::get_singleton()->flush(); //small little hack
+	StopWatch::_call_deferred_used += stop_watch.stop();
 	flush_transform_notifications(); //transforms after world update, to avoid unnecessary enter/exit notifications
 
 	root_lock--;
 
 	_flush_delete_queue();
 
+	stop_watch.start();
 	process_timers(p_time, false); //go through timers
+	StopWatch::_timers_used += stop_watch.stop();
 
+	stop_watch.start();
 	process_tweens(p_time, false);
+	StopWatch::_tweens_used += stop_watch.stop();
 
 	flush_transform_notifications(); //additional transforms after timers update
 

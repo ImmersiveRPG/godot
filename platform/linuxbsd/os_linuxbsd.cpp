@@ -29,6 +29,7 @@
 /**************************************************************************/
 
 #include "os_linuxbsd.h"
+#include "stop_watch/stop_watch.h"
 
 #include "core/io/certs_compressed.gen.h"
 #include "core/io/dir_access.h"
@@ -905,12 +906,40 @@ void OS_LinuxBSD::run() {
 	//uint64_t frame=0;
 
 	while (true) {
+		StopWatch::_input_used = 0;
+		StopWatch::_phy_used = 0;
+		StopWatch::_navigation_used = 0;
+		StopWatch::_physics_process_fn_used = 0;
+		StopWatch::_process_fn_used = 0;
+		StopWatch::_call_deferred_used = 0;
+		StopWatch::_timers_used = 0;
+		StopWatch::_tweens_used = 0;
+		StopWatch::_draw_used = 0;
+
+		auto stop_watch = StopWatch();
 		DisplayServer::get_singleton()->process_events(); // get rid of pending events
 #ifdef JOYDEV_ENABLED
 		joypad->process_joypads();
 #endif
+		StopWatch::_input_used += stop_watch.stop();
+
 		if (Main::iteration()) {
 			break;
+		}
+
+		// Only show the times measured in game
+		if (! Engine::get_singleton()->is_editor_hint()  && ! Engine::get_singleton()->is_project_manager_hint()) {
+			print_line(vformat("input: %6d, phy3d: %6d, nav: %6d, phy: %6d, prc: %6d, dfr: %6d, tmr: %6d, twn: %6d, draw: %6d",
+				StopWatch::_input_used,
+				StopWatch::_phy_used,
+				StopWatch::_navigation_used,
+				StopWatch::_physics_process_fn_used,
+				StopWatch::_process_fn_used,
+				StopWatch::_call_deferred_used,
+				StopWatch::_timers_used,
+				StopWatch::_tweens_used,
+				StopWatch::_draw_used
+			));
 		}
 	}
 
