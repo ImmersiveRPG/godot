@@ -479,11 +479,11 @@ bool SceneTree::physics_process(double p_time) {
 
 	stop_watch.start();
 	process_timers(p_time, true); //go through timers
-	StopWatch::_timers_used += stop_watch.stop();
+	StopWatch::_physics_timers_used += stop_watch.stop();
 
 	stop_watch.start();
 	process_tweens(p_time, true);
-	StopWatch::_tweens_used += stop_watch.stop();
+	StopWatch::_physics_tweens_used += stop_watch.stop();
 
 	flush_transform_notifications();
 	root_lock--;
@@ -538,11 +538,11 @@ bool SceneTree::process(double p_time) {
 
 	stop_watch.start();
 	process_timers(p_time, false); //go through timers
-	StopWatch::_timers_used += stop_watch.stop();
+	StopWatch::_process_timers_used += stop_watch.stop();
 
 	stop_watch.start();
 	process_tweens(p_time, false);
-	StopWatch::_tweens_used += stop_watch.stop();
+	StopWatch::_process_tweens_used += stop_watch.stop();
 
 	flush_transform_notifications(); //additional transforms after timers update
 

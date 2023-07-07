@@ -912,8 +912,10 @@ void OS_LinuxBSD::run() {
 		StopWatch::_physics_process_fn_used = 0;
 		StopWatch::_process_fn_used = 0;
 		StopWatch::_call_deferred_used = 0;
-		StopWatch::_timers_used = 0;
-		StopWatch::_tweens_used = 0;
+		StopWatch::_physics_timers_used = 0;
+		StopWatch::_process_timers_used = 0;
+		StopWatch::_physics_tweens_used = 0;
+		StopWatch::_process_tweens_used = 0;
 		StopWatch::_draw_used = 0;
 
 		auto stop_watch = StopWatch();
@@ -929,15 +931,17 @@ void OS_LinuxBSD::run() {
 
 		// Only show the times measured in game
 		if (! Engine::get_singleton()->is_editor_hint()  && ! Engine::get_singleton()->is_project_manager_hint()) {
-			print_line(vformat("input: %6d, phy3d: %6d, nav: %6d, phy: %6d, prc: %6d, dfr: %6d, tmr: %6d, twn: %6d, draw: %6d",
+			print_line(vformat("input: %6d, phy3d: %6d, nav: %6d, phy: %6d, prc: %6d, dfr: %6d, phy_tmr: %6d, pro_tmr: %6d, phy_twn: %6d, pro_twn: %6d, draw: %6d",
 				StopWatch::_input_used,
 				StopWatch::_phy_used,
 				StopWatch::_navigation_used,
 				StopWatch::_physics_process_fn_used,
 				StopWatch::_process_fn_used,
 				StopWatch::_call_deferred_used,
-				StopWatch::_timers_used,
-				StopWatch::_tweens_used,
+				StopWatch::_physics_timers_used,
+				StopWatch::_process_timers_used,
+				StopWatch::_physics_tweens_used,
+				StopWatch::_process_tweens_used,
 				StopWatch::_draw_used
 			));
 		}

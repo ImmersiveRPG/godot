@@ -9,8 +9,10 @@ uint64_t StopWatch::_navigation_used = 0;
 uint64_t StopWatch::_physics_process_fn_used = 0;
 uint64_t StopWatch::_process_fn_used = 0;
 uint64_t StopWatch::_call_deferred_used = 0;
-uint64_t StopWatch::_timers_used = 0;
-uint64_t StopWatch::_tweens_used = 0;
+uint64_t StopWatch::_physics_timers_used = 0;
+uint64_t StopWatch::_process_timers_used = 0;
+uint64_t StopWatch::_physics_tweens_used = 0;
+uint64_t StopWatch::_process_tweens_used = 0;
 uint64_t StopWatch::_draw_used = 0;
 
 StopWatch::StopWatch() {

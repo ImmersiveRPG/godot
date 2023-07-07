@@ -12,8 +12,10 @@ struct StopWatch {
 	static uint64_t _physics_process_fn_used;
 	static uint64_t _process_fn_used;
 	static uint64_t _call_deferred_used;
-	static uint64_t _timers_used;
-	static uint64_t _tweens_used;
+	static uint64_t _physics_timers_used;
+	static uint64_t _process_timers_used;
+	static uint64_t _physics_tweens_used;
+	static uint64_t _process_tweens_used;
 	static uint64_t _draw_used;
 
 	uint64_t _start_ticks;
