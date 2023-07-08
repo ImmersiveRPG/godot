@@ -929,9 +929,12 @@ void OS_LinuxBSD::run() {
 			break;
 		}
 
+		bool is_game = ! Engine::get_singleton()->is_editor_hint()  && ! Engine::get_singleton()->is_project_manager_hint();
+///*
 		// Only show the times measured in game
-		if (! Engine::get_singleton()->is_editor_hint()  && ! Engine::get_singleton()->is_project_manager_hint()) {
-			print_line(vformat("input: %6d, phy3d: %6d, nav: %6d, phy: %6d, prc: %6d, dfr: %6d, phy_tmr: %6d, pro_tmr: %6d, phy_twn: %6d, pro_twn: %6d, draw: %6d",
+		if (is_game) {
+			print_line(vformat("frame %d, input: %6d, phy3d: %6d, nav: %6d, phy: %6d, prc: %6d, dfr: %6d, phy_tmr: %6d, pro_tmr: %6d, phy_twn: %6d, pro_twn: %6d, draw: %6d",
+				Engine::get_singleton()->get_frames_drawn(),
 				StopWatch::_input_used,
 				StopWatch::_phy_used,
 				StopWatch::_navigation_used,
@@ -945,6 +948,7 @@ void OS_LinuxBSD::run() {
 				StopWatch::_draw_used
 			));
 		}
+//*/
 	}
 
 	main_loop->finalize();

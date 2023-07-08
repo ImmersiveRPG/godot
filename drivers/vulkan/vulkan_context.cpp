@@ -30,6 +30,7 @@
 
 #include "vulkan_context.h"
 
+#include "stop_watch/stop_watch.h"
 #include "core/config/engine.h"
 #include "core/config/project_settings.h"
 #include "core/string/ustring.h"
@@ -2291,6 +2292,10 @@ Error VulkanContext::prepare_buffers() {
 }
 
 Error VulkanContext::swap_buffers() {
+	auto stop_watch = StopWatch();
+	uint64_t t;
+	bool is_game = ! Engine::get_singleton()->is_editor_hint()  && ! Engine::get_singleton()->is_project_manager_hint();
+
 	if (!queues_initialized) {
 		return OK;
 	}
@@ -2486,8 +2491,11 @@ Error VulkanContext::swap_buffers() {
 		}
 	}
 #endif
+	stop_watch.start();
 	//	print_line("current buffer:  " + itos(current_buffer));
 	err = fpQueuePresentKHR(present_queue, &present);
+	t = stop_watch.stop();
+	if (is_game) print_line(vformat("fpQueuePresentKHR: %6d", t));
 
 	frame_index += 1;
 	frame_index %= FRAME_LAG;

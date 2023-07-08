@@ -30,6 +30,7 @@
 
 #include "rendering_device_vulkan.h"
 
+#include "stop_watch/stop_watch.h"
 #include "core/config/project_settings.h"
 #include "core/io/compression.h"
 #include "core/io/dir_access.h"
@@ -8589,14 +8590,25 @@ VkSampleCountFlagBits RenderingDeviceVulkan::_ensure_supported_sample_count(Text
 }
 
 void RenderingDeviceVulkan::swap_buffers() {
+	auto stop_watch = StopWatch();
+	uint64_t t;
+	bool is_game = ! Engine::get_singleton()->is_editor_hint()  && ! Engine::get_singleton()->is_project_manager_hint();
 	ERR_FAIL_COND_MSG(local_device.is_valid(), "Local devices can't swap buffers.");
 	_THREAD_SAFE_METHOD_
 
 	_finalize_command_bufers();
 
+	stop_watch.start();
 	screen_prepared = false;
 	// Swap buffers.
 	context->swap_buffers();
+	t = stop_watch.stop();
+	if (is_game && t >= 1000) {
+		print_line("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+		print_line("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+		print_line("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+	}
+	if (is_game) print_line(vformat("context->swap_buffers: %6d", t));
 
 	frame = (frame + 1) % frame_count;
 
