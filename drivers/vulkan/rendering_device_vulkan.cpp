@@ -8603,7 +8603,7 @@ void RenderingDeviceVulkan::swap_buffers() {
 	// Swap buffers.
 	context->swap_buffers();
 	t = stop_watch.stop();
-	if (is_game && t >= 1000) {
+	if (is_game && t >= 10000) {
 		print_line("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
 		print_line("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
 		print_line("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
