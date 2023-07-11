@@ -3305,6 +3305,16 @@ bool Main::start() {
  * The OS implementation can impact its draw step with the Main::force_redraw() method.
  */
 
+
+int64_t Main::next_start_time = 0;
+int64_t Main::start_time = 0;
+int64_t Main::end_time = 0;
+int64_t Main::used_time = 0;
+int64_t Main::sleep_time = 0;
+int64_t Main::wasted_time = 0;
+int64_t Main:: budget_time = 0;
+const static int64_t default_budget_time = 1000000 / 60;//TARGET_FPS;
+
 uint64_t Main::last_ticks = 0;
 uint32_t Main::frames = 0;
 uint32_t Main::hide_print_fps_attempts = 3;
@@ -3322,12 +3332,44 @@ static uint64_t physics_process_max = 0;
 static uint64_t process_max = 0;
 static uint64_t navigation_process_max = 0;
 
+// FIXME: Replace this with standard clamp function
+int64_t clamp_sint64(int64_t v, int64_t lo, int64_t hi) {
+	if (v < lo) {
+		return lo;
+	} else if (v > hi) {
+		return hi;
+	} else {
+		return v;
+	}
+}
+
 bool Main::iteration() {
 	//for now do not error on this
 	//ERR_FAIL_COND_V(iterating, false);
 
+	Main::next_start_time = clamp_sint64((int64_t) OS::get_singleton()->get_ticks_usec(), 0, INT64_MAX);
+
+	// Get the wasted time
+	Main::used_time = clamp_sint64((int64_t) OS::get_singleton()->get_ticks_usec() - Main::start_time, 0, INT64_MAX);
+	Main::wasted_time = clamp_sint64(Main::used_time - Main::sleep_time, 0, INT64_MAX);
+
+	// Get the time used last frame
+	//Main::delta_time = clamp_sint64(next_start_time - start_time, 0, INT64_MAX);
+	//const float delta = delta_time / 1_000_000.0;
+
+	// Get the budget for this frame
+	Main::start_time = clamp_sint64(Main::next_start_time, 0, INT64_MAX);
+	Main::budget_time = clamp_sint64(Main::default_budget_time - Main::wasted_time, 0, INT64_MAX);
+	//print_line(vformat("looping used: %d, wasted: %d", Main::used_time, Main::wasted_time));
+
+	//DisplayServer::get_singleton()->process_events(); // get rid of pending events
+
 	auto stop_watch = StopWatch();
 	iterating++;
+
+	bool is_game = ! Engine::get_singleton()->is_editor_hint()  && ! Engine::get_singleton()->is_project_manager_hint();
+	//int64_t wasted = (int64_t) OS::get_singleton()->get_ticks_usec() - _wasted_start;
+	//if (is_game) print_line(vformat("!!! wasted %d", wasted));
 
 	const uint64_t ticks = OS::get_singleton()->get_ticks_usec();
 	Engine::get_singleton()->_frame_ticks = ticks;
@@ -3513,7 +3555,34 @@ bool Main::iteration() {
 		return exit;
 	}
 
-	OS::get_singleton()->add_frame_delay(DisplayServer::get_singleton()->window_can_draw());
+	// Get the used time
+	Main::end_time = clamp_sint64((int64_t) OS::get_singleton()->get_ticks_usec(), 0, INT64_MAX);
+	Main::used_time = clamp_sint64(Main::end_time - Main::start_time, 0, INT64_MAX);
+	Main::sleep_time = clamp_sint64(Main::budget_time - Main::used_time, 0, INT64_MAX);
+
+	int64_t real_draw_used = clamp_sint64(StopWatch::_draw_used - StopWatch::_clear_used, 0, INT64_MAX);
+///*
+	if (is_game) {
+		print_line(vformat("_clear_used: %d, _draw_used: %d, next_start_time %d, start_time: %d, end_time: %d, used_time: %d, sleep_time: %d, wasted_time: %d, budget_time: %d, default_budget_time: %d",
+			StopWatch::_clear_used,
+			real_draw_used,
+			Main::next_start_time,
+			Main::start_time,
+			Main::end_time,
+			Main::used_time,
+			Main::sleep_time,
+			Main::wasted_time,
+			Main::budget_time,
+			Main::default_budget_time
+		));
+	}
+//*/
+	bool is_vsync = false;// FIXME: This should not be hard coded
+	if (! is_vsync) {
+		OS::get_singleton()->delay_usec(Main::sleep_time);
+	}
+	//OS::get_singleton()->add_frame_delayXXX(DisplayServer::get_singleton()->window_can_draw(), Main::sleep_time);
+	//OS::get_singleton()->add_frame_delay(DisplayServer::get_singleton()->window_can_draw());
 
 #ifdef TOOLS_ENABLED
 	if (auto_build_solutions) {

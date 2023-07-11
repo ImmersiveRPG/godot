@@ -2495,7 +2495,7 @@ Error VulkanContext::swap_buffers() {
 	//	print_line("current buffer:  " + itos(current_buffer));
 	err = fpQueuePresentKHR(present_queue, &present);
 	t = stop_watch.stop();
-	if (is_game) print_line(vformat("fpQueuePresentKHR: %6d", t));
+	//if (is_game) print_line(vformat("fpQueuePresentKHR: %6d", t));
 
 	frame_index += 1;
 	frame_index %= FRAME_LAG;

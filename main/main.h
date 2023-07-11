@@ -49,6 +49,15 @@ class Main {
 	static bool agile_input_event_flushing;
 
 public:
+	static int64_t next_start_time;
+	static int64_t start_time;
+	static int64_t end_time;
+	static int64_t used_time;
+	static int64_t sleep_time;
+	static int64_t wasted_time;
+	static int64_t budget_time;
+	const static int64_t default_budget_time = 1000000 / 60;//TARGET_FPS;
+
 	static bool is_cmdline_tool();
 #ifdef TOOLS_ENABLED
 	enum CLIScope {

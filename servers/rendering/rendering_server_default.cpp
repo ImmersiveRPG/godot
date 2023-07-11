@@ -30,6 +30,7 @@
 
 #include "rendering_server_default.h"
 
+#include "stop_watch/stop_watch.h"
 #include "core/config/project_settings.h"
 #include "core/io/marshalls.h"
 #include "core/os/os.h"
@@ -69,12 +70,20 @@ void RenderingServerDefault::request_frame_drawn_callback(const Callable &p_call
 }
 
 void RenderingServerDefault::_draw(bool p_swap_buffers, double frame_step) {
+	uint32_t t = 0;
+	auto stop_watch = StopWatch();
+	bool is_game = ! Engine::get_singleton()->is_editor_hint()  && ! Engine::get_singleton()->is_project_manager_hint();
+
+	//stop_watch.start();
 	//needs to be done before changes is reset to 0, to not force the editor to redraw
 	RS::get_singleton()->emit_signal(SNAME("frame_pre_draw"));
+	//t += stop_watch.stop();
 
 	changes = 0;
 
+	stop_watch.start();
 	RSG::rasterizer->begin_frame(frame_step);
+	t += stop_watch.stop();
 
 	TIMESTAMP_BEGIN()
 
@@ -88,12 +97,16 @@ void RenderingServerDefault::_draw(bool p_swap_buffers, double frame_step) {
 
 	RSG::scene->render_probes();
 
+	stop_watch.start();
 	RSG::viewport->draw_viewports();
+	t += stop_watch.stop();
 	RSG::canvas_render->update();
 
 	if (OS::get_singleton()->get_current_rendering_driver_name() != "opengl3") {
 		// Already called for gl_compatibility renderer.
+		stop_watch.start();
 		RSG::rasterizer->end_frame(p_swap_buffers);
+		t += stop_watch.stop();
 	}
 
 	XRServer *xr_server = XRServer::get_singleton();
@@ -195,6 +208,8 @@ void RenderingServerDefault::_draw(bool p_swap_buffers, double frame_step) {
 	}
 
 	RSG::utilities->update_memory_info();
+	//if (is_game) print_line(vformat("!!! t %d", t));
+	StopWatch::_clear_used = t;
 }
 
 double RenderingServerDefault::get_frame_setup_time_cpu() const {

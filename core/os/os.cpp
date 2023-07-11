@@ -578,6 +578,44 @@ void OS::add_frame_delay(bool p_can_draw) {
 	}
 }
 
+void OS::add_frame_delayXXX(bool p_can_draw, int64_t sleep_time) {
+	bool is_game = ! Engine::get_singleton()->is_editor_hint()  && ! Engine::get_singleton()->is_project_manager_hint();
+	const uint32_t frame_delay = Engine::get_singleton()->get_frame_delay();
+	//if (is_game) print_line(vformat("frame_delay: %d", frame_delay));
+	if (frame_delay) {
+		// Add fixed frame delay to decrease CPU/GPU usage. This doesn't take
+		// the actual frame time into account.
+		// Due to the high fluctuation of the actual sleep duration, it's not recommended
+		// to use this as a FPS limiter.
+		delay_usec(frame_delay);
+	}
+
+	// Add a dynamic frame delay to decrease CPU/GPU usage. This takes the
+	// previous frame time into account for a smoother result.
+	uint64_t dynamic_delay = 0;
+	if (is_in_low_processor_usage_mode() || !p_can_draw) {
+		dynamic_delay = get_low_processor_usage_mode_sleep_usec();
+	}
+	const int max_fps = Engine::get_singleton()->get_max_fps();
+	if (max_fps > 0 && !Engine::get_singleton()->is_editor_hint()) {
+		// Override the low processor usage mode sleep delay if the target FPS is lower.
+		dynamic_delay = MAX(dynamic_delay, (uint64_t)(1000000 / max_fps));
+	}
+
+	if (is_game) print_line(vformat("p_can_draw: %s, frame_delay: %s, dynamic_delay: %d, max_fps: %d", p_can_draw, frame_delay, dynamic_delay, max_fps));
+	if (dynamic_delay > 0) {
+		target_ticks += dynamic_delay;
+		uint64_t current_ticks = get_ticks_usec();
+
+		if (current_ticks < target_ticks) {
+			delay_usec(target_ticks - current_ticks);
+		}
+
+		current_ticks = get_ticks_usec();
+		target_ticks = MIN(MAX(target_ticks, current_ticks - dynamic_delay), current_ticks + dynamic_delay);
+	}
+}
+
 Error OS::setup_remote_filesystem(const String &p_server_host, int p_port, const String &p_password, String &r_project_path) {
 	return default_rfs.synchronize_with_server(p_server_host, p_port, p_password, r_project_path);
 }

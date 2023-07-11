@@ -905,7 +905,12 @@ void OS_LinuxBSD::run() {
 	//int frames=0;
 	//uint64_t frame=0;
 
+	Main::start_time = (int64_t) OS::get_singleton()->get_ticks_usec();
+	Main::next_start_time = Main::start_time;
+
 	while (true) {
+///*
+		StopWatch::_clear_used = 0;
 		StopWatch::_input_used = 0;
 		StopWatch::_phy_used = 0;
 		StopWatch::_navigation_used = 0;
@@ -917,20 +922,20 @@ void OS_LinuxBSD::run() {
 		StopWatch::_physics_tweens_used = 0;
 		StopWatch::_process_tweens_used = 0;
 		StopWatch::_draw_used = 0;
-
-		auto stop_watch = StopWatch();
+//*/
+		//auto stop_watch = StopWatch();
 		DisplayServer::get_singleton()->process_events(); // get rid of pending events
 #ifdef JOYDEV_ENABLED
 		joypad->process_joypads();
 #endif
-		StopWatch::_input_used += stop_watch.stop();
+		//StopWatch::_input_used += stop_watch.stop();
 
 		if (Main::iteration()) {
 			break;
 		}
 
-		bool is_game = ! Engine::get_singleton()->is_editor_hint()  && ! Engine::get_singleton()->is_project_manager_hint();
-///*
+		//bool is_game = ! Engine::get_singleton()->is_editor_hint()  && ! Engine::get_singleton()->is_project_manager_hint();
+/*
 		// Only show the times measured in game
 		if (is_game) {
 			print_line(vformat("frame %d, input: %6d, phy3d: %6d, nav: %6d, phy: %6d, prc: %6d, dfr: %6d, phy_tmr: %6d, pro_tmr: %6d, phy_twn: %6d, pro_twn: %6d, draw: %6d",
@@ -948,7 +953,7 @@ void OS_LinuxBSD::run() {
 				StopWatch::_draw_used
 			));
 		}
-//*/
+*/
 	}
 
 	main_loop->finalize();

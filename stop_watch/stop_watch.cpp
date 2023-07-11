@@ -3,6 +3,7 @@
 #include "stop_watch/stop_watch.h"
 #include "core/os/os.h"
 
+uint64_t StopWatch::_clear_used = 0;
 uint64_t StopWatch::_input_used = 0;
 uint64_t StopWatch::_phy_used = 0;
 uint64_t StopWatch::_navigation_used = 0;

@@ -6,6 +6,7 @@
 #include <cstdint>
 
 struct StopWatch {
+	static uint64_t _clear_used;
 	static uint64_t _input_used;
 	static uint64_t _phy_used;
 	static uint64_t _navigation_used;

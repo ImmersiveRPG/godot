@@ -8608,7 +8608,7 @@ void RenderingDeviceVulkan::swap_buffers() {
 		print_line("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
 		print_line("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
 	}
-	if (is_game) print_line(vformat("context->swap_buffers: %6d", t));
+	//if (is_game) print_line(vformat("context->swap_buffers: %6d", t));
 
 	frame = (frame + 1) % frame_count;
 
